@@ -13,7 +13,7 @@
     "react-dom": "^17.0.2",
     "react-scripts": "5.0.1",
     "sass": "^1.49.9",
-    "scichart": "^3.5.681",
+    "scichart": "^3.5.687",
     "scichart-react": "^0.1.8"
   },
   "devDependencies": {

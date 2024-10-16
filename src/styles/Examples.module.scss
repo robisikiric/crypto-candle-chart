@@ -94,6 +94,7 @@
     .SciChartLogo {
         text-align: right;
         margin-bottom: $default-spacing * 2;
+        display: none;
         @include sm {
             display: none;
         }
