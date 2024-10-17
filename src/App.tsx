@@ -1,11 +1,10 @@
 import * as React from "react";
-import { SciChartSurface, FastCandlestickRenderableSeries, SciChartOverview, FastOhlcRenderableSeries } from "scichart";
+import {FastCandlestickRenderableSeries, SciChartOverview, FastOhlcRenderableSeries } from "scichart";
 import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import { appTheme } from "./theme";
 import classes from "./styles/Examples.module.scss";
 import { SciChartReact, SciChartNestedOverview, TResolvedReturnType } from "scichart-react";
 import { drawExample, overviewOptions } from "./drawExample";
-import { FormLabel } from "@material-ui/core";
 
 // React component needed as our examples app is react.
 // SciChart can be used in Angular, Vue, Blazor and vanilla JS! See our Github repo for more info
@@ -18,7 +17,6 @@ export default function CandlestickChart() {
     const handleToggleButtonChanged = (event: any, state: number) => {
         if (state === null) return;
         setPreset(state);
-        console.log(`Toggling Candle/Ohlc state: ${state}`);
         // Toggle visibility of candlestick or OHLC series
         candlestickChartSeries.isVisible = state === 0;
         ohlcChartSeries.isVisible = state === 1;
