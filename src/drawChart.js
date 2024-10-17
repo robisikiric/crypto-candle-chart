@@ -33,12 +33,11 @@ import {
     ZoomPanModifier,
 } from "scichart";
 import { appTheme } from "./theme";
-import { simpleBinanceRestClient } from "./binanceRestClient";
-import { ExampleDataProvider, TPriceBar } from "./ExampleDataProvider";
+import { DataProvider } from "./DataProvider";
 
 const Y_AXIS_VOLUME_ID = "Y_AXIS_VOLUME_ID";
 
-export const drawExample = (dataSource: string) => async (rootElement: string | HTMLDivElement) => {
+export const drawChart = (dataSource) => async (rootElement) => {
     // Create a SciChartSurface
     const { sciChartSurface, wasmContext } = await SciChartSurface.create(rootElement, {
         theme: appTheme.SciChartJsTheme,
@@ -76,25 +75,25 @@ export const drawExample = (dataSource: string) => async (rootElement: string | 
         })
     );
 
-    const xValues: number[] = [];
-    const openValues: number[] = [];
-    const highValues: number[] = [];
-    const lowValues: number[] = [];
-    const closeValues: number[] = [];
-    const volumeValues: number[] = [];
+    const xValues = [];
+    const openValues = [];
+    const highValues = [];
+    const lowValues = [];
+    const closeValues = [];
+    const volumeValues = [];
 
     // Fetch data from now to 300 1hr candles ago
     const endDate = new Date(Date.now());
     const startDate = new Date();
     startDate.setHours(endDate.getHours() - 300);
-    let priceBars: TPriceBar[];
-    if (dataSource !== "Random") {
-        priceBars = await simpleBinanceRestClient.getCandles("BTCUSDT", "1h", startDate, endDate, 500, dataSource);
-    } else {
-        priceBars = ExampleDataProvider.getRandomCandles(300, 60000, startDate, 60 * 60);
-    }
+    let priceBars = [];
+    // if (dataSource !== "Random") {
+    //     // priceBars = await simpleBinanceRestClient.getCandles("BTCUSDT", "1h", startDate, endDate, 500, dataSource);
+    // } else {
+        priceBars = DataProvider.getRandomCandles(300, 60000, startDate, 60 * 60);
+    // }
     // Maps PriceBar { date, open, high, low, close, volume } to structure-of-arrays expected by scichart
-    priceBars.forEach((priceBar: any) => {
+    priceBars.forEach((priceBar) => {
         xValues.push(priceBar.date);
         openValues.push(priceBar.open);
         highValues.push(priceBar.high);
@@ -202,28 +201,24 @@ export const drawExample = (dataSource: string) => async (rootElement: string | 
     return { sciChartSurface, candlestickSeries, ohlcSeries };
 };
 
-class VolumePaletteProvider implements IFillPaletteProvider {
-    fillPaletteMode: EFillPaletteMode = EFillPaletteMode.SOLID;
-    private ohlcDataSeries: OhlcDataSeries;
-    private upColorArgb: number;
-    private downColorArgb: number;
-
-    constructor(masterData: OhlcDataSeries, upColor: string, downColor: string) {
+class VolumePaletteProvider {
+    constructor(masterData, upColor, downColor) {
+        this.fillPaletteMode = EFillPaletteMode.SOLID;
         this.upColorArgb = parseColorToUIntArgb(upColor);
         this.downColorArgb = parseColorToUIntArgb(downColor);
         this.ohlcDataSeries = masterData;
     }
-    onAttached(parentSeries: IRenderableSeries): void {}
-    onDetached(): void {}
+
+    onAttached(parentSeries) {
+        // Implementation can be added here if needed
+    }
+
+    onDetached() {
+        // Implementation can be added here if needed
+    }
 
     // Return up or down color for the volume bars depending on Ohlc data
-    overrideFillArgb(
-        xValue: number,
-        yValue: number,
-        index: number,
-        opacity?: number,
-        metadata?: IPointMetadata
-    ): number {
+    overrideFillArgb(xValue, yValue, index, opacity, metadata) {
         const isUpCandle =
             this.ohlcDataSeries.getNativeOpenValues().get(index) >=
             this.ohlcDataSeries.getNativeCloseValues().get(index);
@@ -231,19 +226,13 @@ class VolumePaletteProvider implements IFillPaletteProvider {
     }
 
     // Override stroke as well, even though strokethickness is 0, because stroke is used if column thickness goes to 0.
-    overrideStrokeArgb(
-        xValue: number,
-        yValue: number,
-        index: number,
-        opacity?: number,
-        metadata?: IPointMetadata
-    ): number {
+    overrideStrokeArgb(xValue, yValue, index, opacity, metadata) {
         return this.overrideFillArgb(xValue, yValue, index, opacity, metadata);
     }
 }
 
 // Override the standard tooltip displayed by CursorModifier
-const getTooltipLegendTemplate = (seriesInfos: SeriesInfo[], svgAnnotation: CursorTooltipSvgAnnotation) => {
+const getTooltipLegendTemplate = (seriesInfos, svgAnnotation) => {
     let outputSvgString = "";
 
     // Foreach series there will be a seriesInfo supplied by SciChart. This contains info about the series under the house
@@ -252,7 +241,7 @@ const getTooltipLegendTemplate = (seriesInfos: SeriesInfo[], svgAnnotation: Curs
         const textColor = seriesInfo.stroke;
         let legendText = seriesInfo.formattedYValue;
         if (seriesInfo.dataSeriesType === EDataSeriesType.Ohlc) {
-            const o = seriesInfo as OhlcSeriesInfo;
+            const o = seriesInfo;
             legendText = `Open=${o.formattedOpenValue} High=${o.formattedHighValue} Low=${o.formattedLowValue} Close=${o.formattedCloseValue}`;
         }
         outputSvgString += `<text x="8" y="${y}" font-size="13" font-family="Verdana" fill="${textColor}">
@@ -266,7 +255,7 @@ const getTooltipLegendTemplate = (seriesInfos: SeriesInfo[], svgAnnotation: Curs
 };
 
 // Override the Renderableseries to display on the scichart overview
-const getOverviewSeries = (defaultSeries: IRenderableSeries) => {
+const getOverviewSeries = (defaultSeries) => {
     if (defaultSeries.type === ESeriesType.CandlestickSeries) {
         // Swap the default candlestick series on the overview chart for a mountain series. Same data
         return new FastMountainRenderableSeries(defaultSeries.parentSurface.webAssemblyContext2D, {

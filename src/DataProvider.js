@@ -1,51 +1,7 @@
-import { XyDataSeries } from "scichart";
-
-export interface IXyValues {
-    xValues: number[];
-    yValues: number[];
-}
-
-export interface IOhlcvValues {
-    dateValues: number[];
-    openValues: number[];
-    highValues: number[];
-    lowValues: number[];
-    closeValues: number[];
-    volumeValues: number[];
-}
-
-export type TPriceBar = {
-    date: number;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-};
-
-/**
- * Helper class for the SciChart.Js JavaScript Chart examples to return datasets used throughout the examples
- */
-export class ExampleDataProvider {
-    /**
-     * Creates a damped sinewave
-     * @param pad number of points to pad with zeros
-     * @param amplitude The amplitude
-     * @param phase An initial phase
-     * @param dampingFactor Damping factor applied to the sinewave
-     * @param pointCount Total number of points
-     * @param freq The frequency of the sinewave in radians
-     */
-    public static getDampedSinewave(
-        pad: number,
-        amplitude: number,
-        phase: number,
-        dampingFactor: number,
-        pointCount: number,
-        frequency: number = 10
-    ): IXyValues {
-        const xValues: number[] = [];
-        const yValues: number[] = [];
+export class DataProvider {
+    static getDampedSinewave(pad, amplitude, phase, dampingFactor, pointCount, frequency = 10) {
+        const xValues = [];
+        const yValues = [];
 
         for (let i = 0; i < pad; i++) {
             const time = (10 * i) / pointCount;
@@ -66,20 +22,13 @@ export class ExampleDataProvider {
         return { xValues, yValues };
     }
 
-    public static getSinewave(amplitude: number, phase: number, pointCount: number, frequency: number = 10): IXyValues {
-        return ExampleDataProvider.getDampedSinewave(0, amplitude, phase, 0.0, pointCount, frequency);
+    static getSinewave(amplitude, phase, pointCount, frequency = 10) {
+        return DataProvider.getDampedSinewave(0, amplitude, phase, 0.0, pointCount, frequency);
     }
 
-    public static getNoisySinewave = (
-        pointCount: number,
-        xMax: number,
-        frequency: number,
-        amplitude: number,
-        noiseAmplitude: number
-    ) => {
-        // TODO: add noise
-        const xValues: number[] = [];
-        const yValues: number[] = [];
+    static getNoisySinewave(pointCount, xMax, frequency, amplitude, noiseAmplitude) {
+        const xValues = [];
+        const yValues = [];
 
         const phase = frequency / xMax;
         const freq = 2 * Math.PI * phase;
@@ -92,16 +41,9 @@ export class ExampleDataProvider {
             yValues.push(y + yNoise);
         }
         return { xValues, yValues };
-    };
+    }
 
-    public static fillNoisySinewave(
-        pointCount: number,
-        xMax: number,
-        frequency: number,
-        amplitude: number,
-        noiseAmplitude: number,
-        dataSeries: XyDataSeries
-    ) {
+    static fillNoisySinewave(pointCount, xMax, frequency, amplitude, noiseAmplitude, dataSeries) {
         const phase = frequency / xMax;
         const freq = 2 * Math.PI * phase;
 
@@ -119,13 +61,7 @@ export class ExampleDataProvider {
         }
     }
 
-    public static getFourierSeriesZoomed(
-        amplitude: number,
-        phaseShift: number,
-        xStart: number,
-        xEnd: number,
-        count: number = 5000
-    ): IXyValues {
+    static getFourierSeriesZoomed(amplitude, phaseShift, xStart, xEnd, count = 5000) {
         const fourierData = this.getFourierSeries(amplitude, phaseShift, count);
 
         let index0 = 0;
@@ -138,14 +74,14 @@ export class ExampleDataProvider {
             }
         }
 
-        const xValues: number[] = fourierData.xValues.filter((_, i) => i >= index0 && i < index1);
-        const yValues: number[] = fourierData.yValues.filter((_, i) => i >= index0 && i < index1);
+        const xValues = fourierData.xValues.filter((_, i) => i >= index0 && i < index1);
+        const yValues = fourierData.yValues.filter((_, i) => i >= index0 && i < index1);
         return { xValues, yValues };
     }
 
-    public static getFourierSeries(amplitude: number, phaseShift: number, count: number = 5000): IXyValues {
-        const xValues: number[] = [];
-        const yValues: number[] = [];
+    static getFourierSeries(amplitude, phaseShift, count = 5000) {
+        const xValues = [];
+        const yValues = [];
 
         for (let i = 0; i < count; i++) {
             const time = (10 * i) / count;
@@ -167,9 +103,9 @@ export class ExampleDataProvider {
         return { xValues, yValues };
     }
 
-    public static getExponentialCurve(power: number, pointCount: number): IXyValues {
-        const xValues: number[] = [];
-        const yValues: number[] = [];
+    static getExponentialCurve(power, pointCount) {
+        const xValues = [];
+        const yValues = [];
         for (let i = 0; i < pointCount; i++) {
             const y = Math.pow(i + 1, power);
             xValues.push(i + 1);
@@ -178,10 +114,10 @@ export class ExampleDataProvider {
         return { xValues, yValues };
     }
 
-    public static getSpectrumData(shift: number, points: number, harmonics = 20, scaling = 50, randomFactor = 0.5) {
+    static getSpectrumData(shift, points, harmonics = 20, scaling = 50, randomFactor = 0.5) {
         const xValues = Array.from(Array(points).keys());
         const arr = Array(harmonics).fill(1);
-        const yValues = ExampleDataProvider.getSpectrum(
+        const yValues = DataProvider.getSpectrum(
             points,
             arr.map((_, i) => i / scaling + (i / scaling) * Math.random() * randomFactor),
             arr,
@@ -190,8 +126,8 @@ export class ExampleDataProvider {
         return { xValues, yValues };
     }
 
-    static getSpectrum = (points: number, frequencies: number[], amplitudes: number[], shift: number) => {
-        const values: number[] = [];
+    static getSpectrum(points, frequencies, amplitudes, shift) {
+        const values = [];
         for (let x = 0; x < points; x++) {
             let y = 0;
             for (let i = 0; i < frequencies.length; i++) {
@@ -200,10 +136,10 @@ export class ExampleDataProvider {
             values.push(y);
         }
         return values;
-    };
+    }
 
-    static getRandomCandles = (count: number, startPrice: number, startDate: Date, interval: number) => {
-        let p: TPriceBar = {
+    static getRandomCandles(count, startPrice, startDate, interval) {
+        let p = {
             date: startDate.getTime() / 1000,
             open: startPrice,
             high: startPrice,
@@ -211,7 +147,7 @@ export class ExampleDataProvider {
             close: startPrice,
             volume: 0,
         };
-        const bars: TPriceBar[] = [];
+        const bars = [];
         for (let c = 0; c < count; c++) {
             for (let t = 0; t < 20; t++) {
                 const r = Math.random() - 0.5;
@@ -230,18 +166,19 @@ export class ExampleDataProvider {
                 volume: 0,
             };
         }
+        
         return bars;
-    };
+    }
 
-    static getRandomOHLCVData = (count: number, startPrice: number, startDate: Date, interval: number) => {
-        const xValues: number[] = [];
-        const openValues: number[] = [];
-        const highValues: number[] = [];
-        const lowValues: number[] = [];
-        const closeValues: number[] = [];
-        const volumeValues: number[] = [];
-        const priceBars = ExampleDataProvider.getRandomCandles(count, startPrice, startDate, interval);
-        priceBars.forEach((priceBar: any) => {
+    static getRandomOHLCVData(count, startPrice, startDate, interval) {
+        const xValues = [];
+        const openValues = [];
+        const highValues = [];
+        const lowValues = [];
+        const closeValues = [];
+        const volumeValues = [];
+        const priceBars = DataProvider.getRandomCandles(count, startPrice, startDate, interval);
+        priceBars.forEach((priceBar) => {
             xValues.push(priceBar.date);
             openValues.push(priceBar.open);
             highValues.push(priceBar.high);
@@ -250,5 +187,5 @@ export class ExampleDataProvider {
             volumeValues.push(priceBar.volume);
         });
         return { xValues, openValues, highValues, lowValues, closeValues, volumeValues };
-    };
+    }
 }
